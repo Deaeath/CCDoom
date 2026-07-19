@@ -1,10 +1,17 @@
 -- debug_flash.lua: one-off diagnostic, prints real numbers instead of guessing
 -- from screenshots. Run with: debug_flash
+local scriptDir = fs.getDir(shell.getRunningProgram())
 local w, h = term.getSize()
 print("term size: " .. w .. "x" .. h)
+print("script dir: " .. scriptDir)
 
 local function measure(path)
-    local img = paintutils.loadImage(path)
+    local full = fs.combine(scriptDir, path)
+    local img = paintutils.loadImage(full)
+    if not img then
+        print("FAILED to load: " .. full)
+        return 0, 0
+    end
     local iw, ih = 0, 0
     for y, row in pairs(img) do
         if y > ih then ih = y end
