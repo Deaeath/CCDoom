@@ -340,6 +340,17 @@ local function rendering()
 		end
 		ThreeDFrame:drawBuffer()
 
+		-- Permanent true-center reference marker (row 3, magenta) -- drawn by
+		-- the same code into the same coordinate space as the flash, so
+		-- however a screenshot/preview crops or scales the screen, this
+		-- marker and the flash crop/scale identically. If they don't line up
+		-- vertically in a screenshot, that's a real position bug; if they do,
+		-- any remaining "off-center" read is the preview widget, not the code.
+		term.setCursorPos(math.floor(termWidth / 2) + 1, 3)
+		term.setBackgroundColor(colors.black)
+		term.setTextColor(colors.magenta)
+		term.write("|")
+
 		if debugLine then
 			term.setCursorPos(1, 1)
 			term.setBackgroundColor(colors.black)
