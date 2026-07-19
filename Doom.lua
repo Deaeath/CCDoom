@@ -304,7 +304,12 @@ local function rendering()
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
 				-- centered on the screen itself, not relative to the gun
-				local fireX = math.floor((termWidth - imgWidth(bfire)) / 2 + 0.5) + 50
+				-- blittle mode: the draw buffer is 2 pixels per terminal cell
+				-- horizontally (26-wide term = 51-wide buffer -- the same 51
+				-- baked into the gunX offset), so center in buffer pixels,
+				-- not terminal columns
+				local bufferWidth = termWidth * 2 - 1
+				local fireX = math.floor((bufferWidth - imgWidth(bfire)) / 2 + 0.5)
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, bfire, true)
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
@@ -318,7 +323,8 @@ local function rendering()
 		else
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				local fireX = math.floor((termWidth - imgWidth(fire)) / 2 + 0.5) + 50
+				-- non-blittle: buffer is 1:1 with terminal cells
+				local fireX = math.floor((termWidth - imgWidth(fire)) / 2 + 0.5)
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, fire, false)
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
