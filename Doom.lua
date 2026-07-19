@@ -300,6 +300,7 @@ local function rendering()
 		ThreeDFrame:drawObjects(solidObjects)
 		drawEnemySprites()
 
+		local debugLine = nil
 		if (blittleOn) then
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
@@ -313,6 +314,7 @@ local function rendering()
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, bfire, true)
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
+				debugLine = "B fx=" .. fireX .. " tw=" .. termWidth .. " bw=" .. bufferWidth
 			else
 				ThreeDFrame.buffer:image(gunX, gunY, bgun, true)
 			end
@@ -328,6 +330,7 @@ local function rendering()
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, fire, false)
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
+				debugLine = "N fx=" .. fireX .. " tw=" .. termWidth
 			else
 				ThreeDFrame.buffer:image(gunX, gunY, gun, false)
 			end
@@ -337,6 +340,14 @@ local function rendering()
 			end
 		end
 		ThreeDFrame:drawBuffer()
+
+		if debugLine then
+			term.setCursorPos(1, 1)
+			term.setBackgroundColor(colors.black)
+			term.setTextColor(colors.lime)
+			term.clearLine()
+			term.write(debugLine)
+		end
 
 		os.queueEvent("FakeEvent")
 		os.pullEvent("FakeEvent")
