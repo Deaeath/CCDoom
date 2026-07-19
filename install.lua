@@ -28,8 +28,9 @@ local FILES = {
     "models/enemy1", "models/enemy2", "models/wallx", "models/wallxz", "models/wallz",
     "levels/level1", "levels/level2", "levels/level3", "levels/level4",
     "levels/level5", "levels/level6", "levels/level7", "levels/level8", "levels/level9",
-    "images/bfire", "images/bgun", "images/bgunf", "images/bheart",
-    "images/fire", "images/gun", "images/gunf", "images/heart", "images/logo",
+    "images/bgun", "images/bgunf", "images/bheart", "images/bstatusbar",
+    "images/gun", "images/gunf", "images/heart", "images/logo", "images/statusbar",
+    "images/enemy1_near", "images/enemy1_far", "images/enemy2_near", "images/enemy2_far",
 }
 
 local function status(text)
