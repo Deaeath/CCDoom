@@ -304,7 +304,7 @@ local function rendering()
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
 				-- centered on the screen itself, not relative to the gun
-				local fireX = math.floor((termWidth - imgWidth(bfire)) / 2 + 0.5) + 5
+				local fireX = math.floor((termWidth - imgWidth(bfire)) / 2 + 0.5) + 50
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, bfire, true)
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
@@ -318,7 +318,7 @@ local function rendering()
 		else
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				local fireX = math.floor((termWidth - imgWidth(fire)) / 2 + 0.5) + 5
+				local fireX = math.floor((termWidth - imgWidth(fire)) / 2 + 0.5) + 50
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, fire, false)
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
