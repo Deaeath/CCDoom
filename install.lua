@@ -62,6 +62,11 @@ print("ColossusCraft Doom Installer")
 print("(fork of CCDoom by Xella, https://github.com/Deaeath/CCDoom)")
 print("")
 
+if fs.exists(DEST) then
+    print("Removing existing " .. DEST .. "/ ...")
+    fs.delete(DEST)
+end
+
 for _, folder in ipairs(FOLDERS) do
     fs.makeDir(fs.combine(DEST, folder))
 end
