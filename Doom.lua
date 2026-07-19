@@ -560,7 +560,7 @@ local function deathAnimation()
 		term.setTextColor(col2)
 		term.clear()
 		sleep(delay or 0)
-		for a = 1, 2 do
+		for a = 1, 2 docopyy
 			for y = 1, scr_y do
 				term.setCursorPos((y%2),y)
 				term.write(("\127 "):rep(math.ceil(scr_x/2)+1))
@@ -1076,7 +1076,7 @@ local function drawMenu()
 
 	term.setTextColor(colors.yellow)
 	term.setCursorPos(1, termHeight)
-	write("Copyright (c) 2022 Xella")
+	write("Copyright (c) 2026 ColossusCraft")
 end
 
 local function drawSettings()
