@@ -304,17 +304,16 @@ local function rendering()
 		if (blittleOn) then
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				-- centered on the screen itself, not relative to the gun
-				-- blittle mode: the draw buffer is 2 pixels per terminal cell
-				-- horizontally (26-wide term = 51-wide buffer -- the same 51
-				-- baked into the gunX offset), so center in buffer pixels,
-				-- not terminal columns
-				local bufferWidth = termWidth * 2 - 1
-				local fireX = math.floor((bufferWidth - imgWidth(bfire)) / 2 + 0.5)
+				-- plain terminal-column space -- same space gunX/gunY and the
+				-- heart icons already correctly use. The "buffer is 2x wide"
+				-- theory was wrong and never actually verified against gunX;
+				-- the debug HUD proved it (fx=23 vs gunX=7, same buffer:image
+				-- call -- they have to share one coordinate space)
+				local fireX = math.floor((termWidth - imgWidth(bfire)) / 2 + 0.5)
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, bfire, true)
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
-				debugLine = "B fx=" .. fireX .. " tw=" .. termWidth .. " bw=" .. bufferWidth
+				debugLine = "B fx=" .. fireX .. " gx=" .. gunX .. " tw=" .. termWidth
 			else
 				ThreeDFrame.buffer:image(gunX, gunY, bgun, true)
 			end
@@ -330,7 +329,7 @@ local function rendering()
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, fire, false)
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
-				debugLine = "N fx=" .. fireX .. " tw=" .. termWidth
+				debugLine = "N fx=" .. fireX .. " gx=" .. gunX .. " tw=" .. termWidth
 			else
 				ThreeDFrame.buffer:image(gunX, gunY, gun, false)
 			end
