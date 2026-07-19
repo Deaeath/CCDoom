@@ -20,9 +20,6 @@ local heart = paintutils.loadImage(path.."/images/heart")
 local bheart = paintutils.loadImage(path.."/images/bheart")
 local hearts = 5
 
-local fire = paintutils.loadImage(path.."/images/fire")
-local bfire = paintutils.loadImage(path.."/images/bfire")
-
 -- Freedoom-derived billboard sprites for living enemies (see NOTICE.md).
 -- Pine3D has no texture/UV support, so enemies are excluded from the normal
 -- solid-triangle draw pass and these are blitted as camera-facing 2D
