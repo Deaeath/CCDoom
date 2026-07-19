@@ -337,7 +337,13 @@ local function rendering()
 		-- never had a position bug, so drawing one composited image there
 		-- sidesteps the whole separate-coordinate-space problem entirely.
 		if (blittleOn) then
-			ThreeDFrame.buffer:image(1, termHeight - imgHeight(bstatusbar) + 1, bstatusbar, true)
+			-- blittle packs 2 pixel-rows per terminal row, so bstatusbar's
+			-- 10 rows of pixel data occupy only 5 real screen rows -- using
+			-- the raw imgHeight (10) put this at row 11 on a 20-row screen
+			-- (dead center) instead of flush at the bottom. Hardcoded for
+			-- the actual known screen size (26x20) instead of a generic
+			-- formula that has to guess at blittle's real on-screen height.
+			ThreeDFrame.buffer:image(1, 16, bstatusbar, true)
 
 			local gunX, gunY = Coord.x(32+gunbobX), Coord.y(10+gunbobY)
 			if (lastShot > os.clock() - shootCooldown) then
@@ -350,7 +356,7 @@ local function rendering()
 				ThreeDFrame.buffer:image(2 + (i-1) * 6, 2, bheart, true)
 			end
 		else
-			ThreeDFrame.buffer:image(1, termHeight - imgHeight(statusbar) + 1, statusbar, false)
+			ThreeDFrame.buffer:image(1, 16, statusbar, false)
 
 			local gunX, gunY = Coord.x(32+gunbobX), Coord.y(10+gunbobY)
 			if (lastShot > os.clock() - shootCooldown) then
