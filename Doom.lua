@@ -20,6 +20,10 @@ local heart = paintutils.loadImage(path.."/images/heart")
 local bheart = paintutils.loadImage(path.."/images/bheart")
 local hearts = 5
 
+-- Classic Doom status-bar background (Freedoom STBAR, see NOTICE.md)
+local statusbar = paintutils.loadImage(path.."/images/statusbar")
+local bstatusbar = paintutils.loadImage(path.."/images/bstatusbar")
+
 -- Freedoom-derived billboard sprites for living enemies (see NOTICE.md).
 -- Pine3D has no texture/UV support, so enemies are excluded from the normal
 -- solid-triangle draw pass and these are blitted as camera-facing 2D
@@ -302,6 +306,8 @@ local function rendering()
 		-- never had a position bug, so drawing one composited image there
 		-- sidesteps the whole separate-coordinate-space problem entirely.
 		if (blittleOn) then
+			ThreeDFrame.buffer:image(1, termHeight - imgHeight(bstatusbar) + 1, bstatusbar, true)
+
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
@@ -313,6 +319,8 @@ local function rendering()
 				ThreeDFrame.buffer:image(2 + (i-1) * 6, 2, bheart, true)
 			end
 		else
+			ThreeDFrame.buffer:image(1, termHeight - imgHeight(statusbar) + 1, statusbar, false)
+
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)

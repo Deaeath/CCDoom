@@ -192,16 +192,20 @@ if __name__ == '__main__':
         ("PISGA0", 32, 30, "bgun"),
         ("PISGB0", 15, 10, "gunf"),
         ("PISGB0", 32, 30, "bgunf"),
-        ("PISFA0", 5, 4, "heart_UNUSED"),  # placeholder, overwritten below
         ("STIMA0", 5, 4, "heart"),
         ("STIMA0", 10, 11, "bheart"),
-        ("PISFA0", 3, 3, "fire"),
-        ("PISFA0", 6, 9, "bfire"),
-        ("M_DOOM", 56, 18, "logo"),
+        # NOTE: logo intentionally NOT generated here. User wants the
+        # original CCDoom splash, not Freedoom's M_DOOM -- it's been
+        # re-clobbered by batch copy loops three times already. There is no
+        # "logo" output from this script anymore specifically so that
+        # mistake becomes structurally impossible instead of relying on
+        # remembering to skip it.
         ("POSSA1", 8, 14, "enemy1_near"),   # zombieman, billboard sprite
         ("POSSA1", 4, 6, "enemy1_far"),
         ("TROOA1", 9, 14, "enemy2_near"),   # imp, billboard sprite
         ("TROOA1", 4, 6, "enemy2_far"),
+        ("STBAR", 51, 5, "statusbar"),      # classic Doom status bar background
+        ("STBAR", 51, 10, "bstatusbar"),
     ]
     os.makedirs(out_dir, exist_ok=True)
     for lump, w, h, outname in jobs:
