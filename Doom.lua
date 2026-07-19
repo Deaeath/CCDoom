@@ -22,6 +22,15 @@ local hearts = 5
 
 local fire = paintutils.loadImage(path.."/images/fire")
 local bfire = paintutils.loadImage(path.."/images/bfire")
+
+-- Freedoom-derived billboard sprites for living enemies (see NOTICE.md).
+-- Pine3D has no texture/UV support, so enemies are excluded from the normal
+-- solid-triangle draw pass and these are blitted as camera-facing 2D
+-- overlays instead, positioned via a simple horizontal-angle projection.
+local enemy1Near = paintutils.loadImage(path.."/images/enemy1_near")
+local enemy1Far = paintutils.loadImage(path.."/images/enemy1_far")
+local enemy2Near = paintutils.loadImage(path.."/images/enemy2_near")
+local enemy2Far = paintutils.loadImage(path.."/images/enemy2_far")
 local shootCooldown = 3 / 16
 local lastShot = os.clock() - shootCooldown
 local resetGame = false
@@ -196,6 +205,63 @@ local function free(x, y, z)
 	return true
 end
 
+-- Steps from the player toward (ex,ez) checking free() at each point, same
+-- technique shoot() uses for bullets -- true if nothing solid is in the way.
+local function enemyVisible(ex, ez)
+	local dx, dz = ex - playerX, ez - playerZ
+	local dist = math.sqrt(dx * dx + dz * dz)
+	if dist < 0.001 then return true end
+	local step = 0.25
+	local steps = math.floor(dist / step)
+	for i = 1, steps - 1 do
+		local t = i * step
+		if not free(playerX + dx / dist * t, 0, playerZ + dz / dist * t) then
+			return false
+		end
+	end
+	return true
+end
+
+-- Pine3D has no texture/UV support, so living enemies are excluded from the
+-- normal solid-triangle draw pass (see the filtered list in rendering())
+-- and blitted here instead as camera-facing 2D billboards. Vertical look
+-- (playerDirectionVer) is intentionally ignored -- known simplification.
+local function drawEnemySprites()
+	for objectNr, object in pairs(objects) do
+		if (object.model == "enemy1" or object.model == "enemy2") then
+			local ex, ez = object[1], object[3]
+			local dx, dz = ex - playerX, ez - playerZ
+			local dist = math.sqrt(dx * dx + dz * dz)
+			if dist > 0.3 and dist < 15 and enemyVisible(ex, ez) then
+				-- angle from player to enemy, same atan/quadrant convention
+				-- the enemy AI above already uses for its own facing math
+				local ang
+				local adx, adz = playerX - ex, playerZ - ez
+				if adz == 0 then adz = 0.00001 end
+				ang = math.deg(math.atan(adx / adz))
+				if (adz < 0) then
+					if (adx < 0) then ang = ang - 180 else ang = ang + 180 end
+				end
+				local rel = ang - playerDirectionHor
+				while rel > 180 do rel = rel - 360 end
+				while rel < -180 do rel = rel + 360 end
+				if math.abs(rel) < FoV / 2 then
+					local img
+					if object.model == "enemy1" then
+						img = (dist < 5) and enemy1Near or enemy1Far
+					else
+						img = (dist < 5) and enemy2Near or enemy2Far
+					end
+					local imgW, imgH = #img[1], #img
+					local col = math.floor(termWidth / 2 + (rel / (FoV / 2)) * (termWidth / 2) - imgW / 2)
+					local row = math.floor(termHeight / 2) - imgH
+					ThreeDFrame.buffer:image(col, row, img, false)
+				end
+			end
+		end
+	end
+end
+
 local function rendering()
 	ThreeDFrame:setCamera(playerX, playerY + 0.5, playerZ, 0, playerDirectionHor, playerDirectionVer)
 
@@ -203,7 +269,16 @@ local function rendering()
 		--ThreeDFrame:loadGround(backgroundColor1)
 		--ThreeDFrame:loadSky(backgroundColor2)
 		ThreeDFrame:drawObjects(environmentObjects)
-		ThreeDFrame:drawObjects(objects)
+
+		local solidObjects = {}
+		for objectNr, object in pairs(objects) do
+			if object.model ~= "enemy1" and object.model ~= "enemy2" then
+				solidObjects[#solidObjects + 1] = object
+			end
+		end
+		ThreeDFrame:drawObjects(solidObjects)
+		drawEnemySprites()
+
 		if (blittleOn) then
 			if (lastShot > os.clock() - shootCooldown) then
 				ThreeDFrame.buffer:image(29+gunbobX+(termWidth-51), 8+gunbobY+(termHeight-19), bfire, true)

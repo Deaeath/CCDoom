@@ -135,6 +135,37 @@ def resize(char_grid, src_w, src_h, dst_w, dst_h, prefer_bright=False):
     return out
 
 
+def center_horizontally(char_grid, width):
+    # Bounding-box centering does nothing when content already touches both
+    # edges (common once heavily downsampled) -- center on the brightness-
+    # weighted centroid instead, so the visual "mass" of the sprite ends up
+    # centered even if a few outlier pixels still touch an edge.
+    total_weight, weighted_x = 0.0, 0.0
+    for row in char_grid:
+        for x, c in enumerate(row):
+            if c != ' ':
+                w = _LUMA.get(c, 1) + 1  # brighter pixels pull the centroid more
+                weighted_x += x * w
+                total_weight += w
+    if total_weight == 0:
+        return char_grid
+    centroid = weighted_x / total_weight
+    shift = round(width / 2.0 - 0.5 - centroid)
+    if shift == 0:
+        return char_grid
+    out = []
+    for row in char_grid:
+        new_row = [' '] * width
+        for x, c in enumerate(row):
+            if c == ' ':
+                continue
+            nx = x + shift
+            if 0 <= nx < width:
+                new_row[nx] = c
+        out.append(new_row)
+    return out
+
+
 def write_nfp(path, char_grid):
     with open(path, 'wb') as f:
         for row in char_grid:
@@ -146,6 +177,7 @@ def convert(data, lumps, palette, lump_name, dst_w, dst_h, out_path, prefer_brig
     w, h, grid = read_patch(data, lumps, lump_name)
     chars = to_char_grid(w, h, grid, palette)
     resized = resize(chars, w, h, dst_w, dst_h, prefer_bright=prefer_bright)
+    resized = center_horizontally(resized, dst_w)
     write_nfp(out_path, resized)
     print("%s (%dx%d) -> %s (%dx%d)" % (lump_name, w, h, out_path, dst_w, dst_h))
 
@@ -166,6 +198,10 @@ if __name__ == '__main__':
         ("PISFA0", 3, 3, "fire"),
         ("PISFA0", 6, 9, "bfire"),
         ("M_DOOM", 56, 18, "logo"),
+        ("POSSA1", 8, 14, "enemy1_near"),   # zombieman, billboard sprite
+        ("POSSA1", 4, 6, "enemy1_far"),
+        ("TROOA1", 9, 14, "enemy2_near"),   # imp, billboard sprite
+        ("TROOA1", 4, 6, "enemy2_far"),
     ]
     os.makedirs(out_dir, exist_ok=True)
     for lump, w, h, outname in jobs:
