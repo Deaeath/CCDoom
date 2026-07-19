@@ -130,30 +130,30 @@ local function loadLevel(levelname)
 				if (reloadedLevel == false) then
 					local object = nil
 					if (value == colors.orange) then
-						object = ThreeDFrame:newObject("models/wallz", x, 0, z)
+						object = ThreeDFrame:newObject(path.."/models/wallz", x, 0, z)
 						object.solid = true
 					elseif (value == colors.magenta) then
-						object = ThreeDFrame:newObject("models/wallx", x, 0, z)
+						object = ThreeDFrame:newObject(path.."/models/wallx", x, 0, z)
 						object.solid = true
 					elseif (value == colors.lightBlue) then
-						object = ThreeDFrame:newObject("models/wallxz", x, 0, z)
+						object = ThreeDFrame:newObject(path.."/models/wallxz", x, 0, z)
 						object.solid = true
 					elseif (value == colors.red) then
-						object = ThreeDFrame:newObject("models/doorz", x, 0, z)
+						object = ThreeDFrame:newObject(path.."/models/doorz", x, 0, z)
 						object.model = "doorz"
 					elseif (value == colors.green) then
-						object = ThreeDFrame:newObject("models/doorx", x, 0, z)
+						object = ThreeDFrame:newObject(path.."/models/doorx", x, 0, z)
 						object.model = "doorx"
 					elseif (value == colors.yellow) then
-						object = ThreeDFrame:newObject("models/enemy1", x, 0, z)
+						object = ThreeDFrame:newObject(path.."/models/enemy1", x, 0, z)
 						object.model = "enemy1"
 						object.lastHit = os.clock()
 					elseif (value == colors.lime) then
-						object = ThreeDFrame:newObject("models/enemy2", x, 0, z)
+						object = ThreeDFrame:newObject(path.."/models/enemy2", x, 0, z)
 						object.model = "enemy2"
 						object.lastHit = os.clock() - 1/20
 					elseif (value == colors.pink) then
-						object = ThreeDFrame:newObject("models/emerald", x, 0, z, 0, 45, 0)
+						object = ThreeDFrame:newObject(path.."/models/emerald", x, 0, z, 0, 45, 0)
 						object.solid = true
 					end
 
@@ -251,7 +251,7 @@ local function shoot()
 		for objectNr, object in pairs(objects) do
 			if (object.model == "enemy1" or object.model == "enemy2") then
 				if ((math.abs(bulletX - object[1])^2 + math.abs(bulletZ - object[3]))^0.5 <= 0.5) then
-					object:setModel("models/corpse")
+					object:setModel(path.."/models/corpse")
 					object.model = "models/corpse"
 					hit = true
 					score = score + 10
