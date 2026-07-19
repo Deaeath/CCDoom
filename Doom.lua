@@ -26,6 +26,9 @@ local shootCooldown = 3 / 16
 local lastShot = os.clock() - shootCooldown
 local resetGame = false
 
+-- ColossusCraft cheats: I = god mode, K = clear all enemies in view, N = full heal
+local godMode = false
+
 local playerX = 0
 local playerY = 0
 local playerZ = -2
@@ -432,6 +435,18 @@ local function smoothKeyInput()
 				playerDirectionVer = -playerDirectionVer
 			elseif key == keys.leftCtrl then
 				resetGame = true
+			elseif key == keys.i then
+				godMode = not godMode
+			elseif key == keys.k then
+				for objectNr, object in pairs(objects) do
+					if (object.model == "enemy1" or object.model == "enemy2") then
+						object:setModel(path.."/models/corpse")
+						object.model = path.."/models/corpse"
+						score = score + 10
+					end
+				end
+			elseif key == keys.n then
+				hearts = 5
 			end
 		elseif sEvent == "key_up" then
 			keysDown[key] = nil
@@ -501,7 +516,7 @@ local function updateGame(time)
 			if (object.lastHit < os.clock() - 3) then
 				if (lineOfSight(object[1], object[3])) then
 					object.lastHit = os.clock()
-					hearts = hearts - 1
+					if not godMode then hearts = hearts - 1 end
 				end
 			end
 		elseif (object.model == "enemy2") then
@@ -544,7 +559,7 @@ local function updateGame(time)
 			if (object.lastHit < os.clock() - 3) then
 				if (playerDistance < 1) then
 					object.lastHit = os.clock()
-					hearts = hearts - 1
+					if not godMode then hearts = hearts - 1 end
 				end
 			end
 		end
