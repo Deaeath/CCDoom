@@ -310,7 +310,7 @@ local function rendering()
 				-- (partly off-screen) true center
 				local visLeft = math.max(1, gunX)
 				local visRight = math.min(termWidth, gunX + imgWidth(bgun) - 1)
-				-- local fireX = 0
+				local fireX = math.floor((visLeft + visRight) / 2 - imgWidth(bfire) / 2 + 0.5)
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, bfire, true)
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
@@ -327,7 +327,7 @@ local function rendering()
 			if (lastShot > os.clock() - shootCooldown) then
 				local visLeft = math.max(1, gunX)
 				local visRight = math.min(termWidth, gunX + imgWidth(gun) - 1)
-				-- local fireX = 0
+				local fireX = math.floor((visLeft + visRight) / 2 - imgWidth(fire) / 2 + 0.5)
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, fire, false)
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
