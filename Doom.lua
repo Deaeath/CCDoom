@@ -303,10 +303,8 @@ local function rendering()
 		if (blittleOn) then
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				-- center horizontally over the gun's actual width; vertical
-				-- offset matches the original fixed 2-row overlap (fire is
-				-- meant to overlap into the gun sprite, not float above it)
-				local fireX = gunX + math.floor((imgWidth(bgunf) - imgWidth(bfire)) / 2)
+				-- centered on the screen itself, not relative to the gun
+				local fireX = math.floor((termWidth - imgWidth(bfire)) / 2)
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, bfire, true)
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
@@ -320,7 +318,7 @@ local function rendering()
 		else
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				local fireX = gunX + math.floor((imgWidth(gunf) - imgWidth(fire)) / 2)
+				local fireX = math.floor((termWidth - imgWidth(fire)) / 2)
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, fire, false)
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
