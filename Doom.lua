@@ -300,21 +300,14 @@ local function rendering()
 		ThreeDFrame:drawObjects(solidObjects)
 		drawEnemySprites()
 
-		local debugLine = nil
+		-- Flash is baked directly into gunf/bgunf (see tools/composite_flash.py)
+		-- instead of being positioned as a separate overlay -- gunX/gunY have
+		-- never had a position bug, so drawing one composited image there
+		-- sidesteps the whole separate-coordinate-space problem entirely.
 		if (blittleOn) then
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				-- gun (32 cols) is wider than the 26-col screen and clips on
-				-- the right at gunX=7 -- center over the VISIBLE (clipped)
-				-- span of the gun, not the screen or the sprite's own
-				-- (partly off-screen) true center
-				local visLeft = math.max(1, gunX)
-				local visRight = math.min(termWidth, gunX + imgWidth(bgun) - 1)
-				local fireX = math.floor((visLeft + visRight) / 2 - imgWidth(bfire) / 2 + 0.5) - 2
-				local fireY = gunY - 2
-				ThreeDFrame.buffer:image(fireX, fireY, bfire, true)
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
-				debugLine = "B fx=" .. fireX .. " gx=" .. gunX .. " vis=" .. visLeft .. "-" .. visRight
 			else
 				ThreeDFrame.buffer:image(gunX, gunY, bgun, true)
 			end
@@ -325,13 +318,7 @@ local function rendering()
 		else
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				local visLeft = math.max(1, gunX)
-				local visRight = math.min(termWidth, gunX + imgWidth(gun) - 1)
-				local fireX = math.floor((visLeft + visRight) / 2 - imgWidth(fire) / 2 + 0.5) - 2
-				local fireY = gunY - 2
-				ThreeDFrame.buffer:image(fireX, fireY, fire, false)
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
-				debugLine = "N fx=" .. fireX .. " gx=" .. gunX .. " vis=" .. visLeft .. "-" .. visRight
 			else
 				ThreeDFrame.buffer:image(gunX, gunY, gun, false)
 			end
@@ -341,25 +328,6 @@ local function rendering()
 			end
 		end
 		ThreeDFrame:drawBuffer()
-
-		-- Permanent true-center reference marker (row 3, magenta) -- drawn by
-		-- the same code into the same coordinate space as the flash, so
-		-- however a screenshot/preview crops or scales the screen, this
-		-- marker and the flash crop/scale identically. If they don't line up
-		-- vertically in a screenshot, that's a real position bug; if they do,
-		-- any remaining "off-center" read is the preview widget, not the code.
-		term.setCursorPos(math.floor(termWidth / 2) + 1, 3)
-		term.setBackgroundColor(colors.black)
-		term.setTextColor(colors.magenta)
-		term.write("|")
-
-		if debugLine then
-			term.setCursorPos(1, 1)
-			term.setBackgroundColor(colors.black)
-			term.setTextColor(colors.lime)
-			term.clearLine()
-			term.write(debugLine)
-		end
 
 		os.queueEvent("FakeEvent")
 		os.pullEvent("FakeEvent")
