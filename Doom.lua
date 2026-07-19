@@ -304,16 +304,17 @@ local function rendering()
 		if (blittleOn) then
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				-- plain terminal-column space -- same space gunX/gunY and the
-				-- heart icons already correctly use. The "buffer is 2x wide"
-				-- theory was wrong and never actually verified against gunX;
-				-- the debug HUD proved it (fx=23 vs gunX=7, same buffer:image
-				-- call -- they have to share one coordinate space)
-				local fireX = math.floor((termWidth - imgWidth(bfire)) / 2 + 0.5)
+				-- gun (32 cols) is wider than the 26-col screen and clips on
+				-- the right at gunX=7 -- center over the VISIBLE (clipped)
+				-- span of the gun, not the screen or the sprite's own
+				-- (partly off-screen) true center
+				local visLeft = math.max(1, gunX)
+				local visRight = math.min(termWidth, gunX + imgWidth(bgun) - 1)
+				local fireX = math.floor((visLeft + visRight) / 2 - imgWidth(bfire) / 2 + 0.5)
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, bfire, true)
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
-				debugLine = "B fx=" .. fireX .. " gx=" .. gunX .. " tw=" .. termWidth
+				debugLine = "B fx=" .. fireX .. " gx=" .. gunX .. " vis=" .. visLeft .. "-" .. visRight
 			else
 				ThreeDFrame.buffer:image(gunX, gunY, bgun, true)
 			end
@@ -324,12 +325,13 @@ local function rendering()
 		else
 			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				-- non-blittle: buffer is 1:1 with terminal cells
-				local fireX = math.floor((termWidth - imgWidth(fire)) / 2 + 0.5)
+				local visLeft = math.max(1, gunX)
+				local visRight = math.min(termWidth, gunX + imgWidth(gun) - 1)
+				local fireX = math.floor((visLeft + visRight) / 2 - imgWidth(fire) / 2 + 0.5)
 				local fireY = gunY - 2
 				ThreeDFrame.buffer:image(fireX, fireY, fire, false)
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
-				debugLine = "N fx=" .. fireX .. " gx=" .. gunX .. " tw=" .. termWidth
+				debugLine = "N fx=" .. fireX .. " gx=" .. gunX .. " vis=" .. visLeft .. "-" .. visRight
 			else
 				ThreeDFrame.buffer:image(gunX, gunY, gun, false)
 			end
