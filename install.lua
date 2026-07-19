@@ -39,7 +39,7 @@ local function status(text)
 end
 
 local function download(relPath, attempt)
-    local url = BASE .. relPath
+    local url = BASE .. relPath .. "?cb=" .. os.epoch("utc") -- bust CDN cache
     local handle, err = http.get(url, nil, true) -- binary mode, images aren't text
     if not handle then
         if attempt >= 3 then
