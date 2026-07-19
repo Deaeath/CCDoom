@@ -17,12 +17,15 @@ Source lumps used:
 - gunf / bgunf   <- PISGB0 (pistol recoil)
 - fire / bfire   <- PISFA0 (muzzle flash)
 - heart / bheart <- STIMA0 (stimpack, standing in for the health icon)
-- logo           <- M_DOOM (title wordmark)
+- logo           <- M_DOOM (title wordmark), but see note below
 
 To regenerate against a newer Freedoom release:
 1. Download freedoom1.wad from https://github.com/freedoom/freedoom/releases
 2. `python tools/freedoom_convert.py <path-to-freedoom1.wad> tools/converted_out`
-3. Copy the results from tools/converted_out/ into images/
+3. Copy the results from tools/converted_out/ into images/ -- EXCEPT `logo`.
+   The user explicitly wants the original CCDoom splash, not the converted
+   M_DOOM one; it's been accidentally re-clobbered by a blanket copy loop
+   twice already. Skip it, or diff against images_original/logo first.
 
 3D models (models/*) are unmodified -- they're simple hand-authored Pine3D
 polygon data, not sprites, so there's nothing from a WAD to convert them
