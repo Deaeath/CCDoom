@@ -102,7 +102,10 @@ def to_char_grid(width, height, grid, palette):
     return out
 
 
-def resize(char_grid, src_w, src_h, dst_w, dst_h):
+_LUMA = {NFP_CHARS[i]: r + g + b for i, (_, r, g, b) in enumerate(CC_PALETTE)}
+
+
+def resize(char_grid, src_w, src_h, dst_w, dst_h, prefer_bright=False):
     out = []
     for dy in range(dst_h):
         row = []
@@ -119,7 +122,13 @@ def resize(char_grid, src_w, src_h, dst_w, dst_h):
             # majority vote, but prefer non-space if it's at least a third present
             non_space = {c: n for c, n in counts.items() if c != ' '}
             if non_space and sum(non_space.values()) * 3 >= sum(counts.values()):
-                row.append(max(non_space, key=non_space.get))
+                if prefer_bright:
+                    # small icons (muzzle flash) lose their bright core to
+                    # majority-vote against dim anti-aliasing pixels -- pick
+                    # the brightest color present instead of the most common one
+                    row.append(max(non_space, key=lambda c: _LUMA[c]))
+                else:
+                    row.append(max(non_space, key=non_space.get))
             else:
                 row.append(' ')
         out.append(row)
@@ -133,10 +142,10 @@ def write_nfp(path, char_grid):
             f.write(line.encode('ascii') + b'\r\n')
 
 
-def convert(data, lumps, palette, lump_name, dst_w, dst_h, out_path):
+def convert(data, lumps, palette, lump_name, dst_w, dst_h, out_path, prefer_bright=False):
     w, h, grid = read_patch(data, lumps, lump_name)
     chars = to_char_grid(w, h, grid, palette)
-    resized = resize(chars, w, h, dst_w, dst_h)
+    resized = resize(chars, w, h, dst_w, dst_h, prefer_bright=prefer_bright)
     write_nfp(out_path, resized)
     print("%s (%dx%d) -> %s (%dx%d)" % (lump_name, w, h, out_path, dst_w, dst_h))
 
@@ -162,4 +171,5 @@ if __name__ == '__main__':
     for lump, w, h, outname in jobs:
         if outname == "heart_UNUSED":
             continue
-        convert(data, lumps, palette, lump, w, h, os.path.join(out_dir, outname))
+        bright = outname in ("fire", "bfire")
+        convert(data, lumps, palette, lump, w, h, os.path.join(out_dir, outname), prefer_bright=bright)
