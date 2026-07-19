@@ -205,6 +205,16 @@ local function free(x, y, z)
 	return true
 end
 
+-- paintutils images can have per-row trailing space trimmed (variable row
+-- length), so #img[1] alone isn't a reliable width -- use the widest row.
+local function imgWidth(img)
+	local w = 0
+	for _, row in pairs(img) do
+		if #row > w then w = #row end
+	end
+	return w
+end
+
 -- Steps from the player toward (ex,ez) checking free() at each point, same
 -- technique shoot() uses for bullets -- true if nothing solid is in the way.
 local function enemyVisible(ex, ez)
@@ -252,7 +262,7 @@ local function drawEnemySprites()
 					else
 						img = (dist < 5) and enemy2Near or enemy2Far
 					end
-					local imgW, imgH = #img[1], #img
+					local imgW, imgH = imgWidth(img), #img
 					local col = math.floor(termWidth / 2 + (rel / (FoV / 2)) * (termWidth / 2) - imgW / 2)
 					local row = math.floor(termHeight / 2) - imgH
 					ThreeDFrame.buffer:image(col, row, img, false)
@@ -280,22 +290,32 @@ local function rendering()
 		drawEnemySprites()
 
 		if (blittleOn) then
+			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				ThreeDFrame.buffer:image(29+gunbobX+(termWidth-51), 8+gunbobY+(termHeight-19), bfire, true)
-				ThreeDFrame.buffer:image(32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19), bgunf, true)
+				-- center the flash horizontally over the gun sprite (by its
+				-- actual width, not a hardcoded offset -- was drifting left
+				-- of the gun instead of sitting centered above it) and sit
+				-- it just above the muzzle
+				local fireX = gunX + math.floor((imgWidth(bgunf) - imgWidth(bfire)) / 2)
+				local fireY = gunY - #bfire
+				ThreeDFrame.buffer:image(fireX, fireY, bfire, true)
+				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
 			else
-				ThreeDFrame.buffer:image(32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19), bgun, true)
+				ThreeDFrame.buffer:image(gunX, gunY, bgun, true)
 			end
 
 			for i = 1, hearts do
 				ThreeDFrame.buffer:image(2 + (i-1) * 6, 2, bheart, true)
 			end
 		else
+			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
 			if (lastShot > os.clock() - shootCooldown) then
-				ThreeDFrame.buffer:image(29+gunbobX+(termWidth-51), 8+gunbobY+(termHeight-19), fire, false)
-				ThreeDFrame.buffer:image(32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19), gunf, false)
+				local fireX = gunX + math.floor((imgWidth(gunf) - imgWidth(fire)) / 2)
+				local fireY = gunY - #fire
+				ThreeDFrame.buffer:image(fireX, fireY, fire, false)
+				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
 			else
-				ThreeDFrame.buffer:image(32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19), gun, false)
+				ThreeDFrame.buffer:image(gunX, gunY, gun, false)
 			end
 
 			for i = 1, hearts do
