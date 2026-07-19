@@ -3,6 +3,7 @@ name: Lua syntax check
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   syntax:
