@@ -227,6 +227,37 @@ local function imgHeight(img)
 	return h
 end
 
+-- Coordinate engine: all HUD art (gun, hearts, status bar) was originally
+-- authored against a 51x19 terminal (a normal CC:Tweaked Computer). Actual
+-- screens vary (a pocket computer is 26x20), so every HUD element needs the
+-- same reference->screen transform instead of each place inventing its own
+-- "+(termWidth-51)" arithmetic -- that duplication (gunX computed twice,
+-- slightly different each time) was a real source of confusion earlier.
+--
+-- Anchors bottom-right: a HUD element authored at reference position
+-- (refX, refY) keeps the same distance from the bottom-right corner on any
+-- actual screen size, which is what the original gunX/gunY formula did
+-- (verified algebraically: right-margin-from-edge is constant regardless
+-- of termWidth). Same idea, just one definition instead of several.
+local Coord = {}
+Coord.REF_W, Coord.REF_H = 51, 19
+
+function Coord.x(refX)
+	return refX + (termWidth - Coord.REF_W)
+end
+
+function Coord.y(refY)
+	return refY + (termHeight - Coord.REF_H)
+end
+
+-- Clips [screenX, screenX+width-1] to the actual screen bounds -- for HUD
+-- art wider than the real screen (e.g. the 32-col gun sprite on a 26-col
+-- pocket screen), so anything that needs to reason about what's actually
+-- visible (not the sprite's full, possibly off-screen, extent) can.
+function Coord.visibleSpan(screenX, width)
+	return math.max(1, screenX), math.min(termWidth, screenX + width - 1)
+end
+
 -- Steps from the player toward (ex,ez) checking free() at each point, same
 -- technique shoot() uses for bullets -- true if nothing solid is in the way.
 local function enemyVisible(ex, ez)
@@ -308,7 +339,7 @@ local function rendering()
 		if (blittleOn) then
 			ThreeDFrame.buffer:image(1, termHeight - imgHeight(bstatusbar) + 1, bstatusbar, true)
 
-			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
+			local gunX, gunY = Coord.x(32+gunbobX), Coord.y(10+gunbobY)
 			if (lastShot > os.clock() - shootCooldown) then
 				ThreeDFrame.buffer:image(gunX, gunY, bgunf, true)
 			else
@@ -321,7 +352,7 @@ local function rendering()
 		else
 			ThreeDFrame.buffer:image(1, termHeight - imgHeight(statusbar) + 1, statusbar, false)
 
-			local gunX, gunY = 32+gunbobX+(termWidth-51), 10+gunbobY+(termHeight-19)
+			local gunX, gunY = Coord.x(32+gunbobX), Coord.y(10+gunbobY)
 			if (lastShot > os.clock() - shootCooldown) then
 				ThreeDFrame.buffer:image(gunX, gunY, gunf, false)
 			else
