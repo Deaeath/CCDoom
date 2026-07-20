@@ -258,6 +258,15 @@ function Coord.visibleSpan(screenX, width)
 	return math.max(1, screenX), math.min(termWidth, screenX + width - 1)
 end
 
+-- Bottom-anchors an image against the ACTUAL screen height at runtime --
+-- no hardcoded row number for any specific screen size. blittle packs 2
+-- pixel-rows per real terminal row, so its on-screen footprint is half its
+-- raw pixel height (rounded up); non-blittle images are 1:1.
+function Coord.bottomRow(img, isBlittle)
+	local footprint = isBlittle and math.ceil(imgHeight(img) / 2) or imgHeight(img)
+	return termHeight - footprint + 1
+end
+
 -- Steps from the player toward (ex,ez) checking free() at each point, same
 -- technique shoot() uses for bullets -- true if nothing solid is in the way.
 local function enemyVisible(ex, ez)
@@ -337,11 +346,7 @@ local function rendering()
 		-- never had a position bug, so drawing one composited image there
 		-- sidesteps the whole separate-coordinate-space problem entirely.
 		if (blittleOn) then
-			-- Status bar disabled for now -- see images/statusbar,
-			-- images/bstatusbar and tools/freedoom_convert.py if picked
-			-- back up later. Verify in the CraftOS-PC emulator before
-			-- re-enabling, not by round-tripping through the real game.
-			-- ThreeDFrame.buffer:image(1, 16, bstatusbar, true)
+			ThreeDFrame.buffer:image(1, Coord.bottomRow(bstatusbar, true), bstatusbar, true)
 
 			local gunX, gunY = Coord.x(32+gunbobX), Coord.y(10+gunbobY)
 			if (lastShot > os.clock() - shootCooldown) then
@@ -354,7 +359,7 @@ local function rendering()
 				ThreeDFrame.buffer:image(2 + (i-1) * 6, 2, bheart, true)
 			end
 		else
-			-- ThreeDFrame.buffer:image(1, 16, statusbar, false)
+			ThreeDFrame.buffer:image(1, Coord.bottomRow(statusbar, false), statusbar, false)
 
 			local gunX, gunY = Coord.x(32+gunbobX), Coord.y(10+gunbobY)
 			if (lastShot > os.clock() - shootCooldown) then
