@@ -28,10 +28,13 @@ local bstatusbar = paintutils.loadImage(path.."/images/bstatusbar")
 -- Pine3D has no texture/UV support, so enemies are excluded from the normal
 -- solid-triangle draw pass and these are blitted as camera-facing 2D
 -- overlays instead, positioned via a simple horizontal-angle projection.
-local enemy1Near = paintutils.loadImage(path.."/images/enemy1_near")
-local enemy1Far = paintutils.loadImage(path.."/images/enemy1_far")
-local enemy2Near = paintutils.loadImage(path.."/images/enemy2_near")
-local enemy2Far = paintutils.loadImage(path.."/images/enemy2_far")
+local enemySprites = {}
+for _, name in ipairs({"enemy1", "enemy2", "enemy3", "enemy4", "enemy5"}) do
+	enemySprites[name] = {
+		near = paintutils.loadImage(path.."/images/"..name.."_near"),
+		far = paintutils.loadImage(path.."/images/"..name.."_far"),
+	}
+end
 local shootCooldown = 3 / 16
 local lastShot = os.clock() - shootCooldown
 local resetGame = false
@@ -161,10 +164,17 @@ local function loadLevel(levelname)
 						object = ThreeDFrame:newObject(path.."/models/enemy1", x, 0, z)
 						object.model = "enemy1"
 						object.lastHit = os.clock()
+						-- visual variety only -- AI archetype stays "enemy1"
+						-- (ranged), just the billboard sprite varies
+						object.spriteVariant = (math.random(1, 2) == 1) and "enemy1" or "enemy3"
 					elseif (value == colors.lime) then
 						object = ThreeDFrame:newObject(path.."/models/enemy2", x, 0, z)
 						object.model = "enemy2"
 						object.lastHit = os.clock() - 1/20
+						-- visual variety only -- AI archetype stays "enemy2"
+						-- (melee/chase), just the billboard sprite varies
+						local variants = {"enemy2", "enemy4", "enemy5"}
+						object.spriteVariant = variants[math.random(1, 3)]
 					elseif (value == colors.pink) then
 						object = ThreeDFrame:newObject(path.."/models/emerald", x, 0, z, 0, 45, 0)
 						object.solid = true
@@ -308,12 +318,8 @@ local function drawEnemySprites()
 				while rel > 180 do rel = rel - 360 end
 				while rel < -180 do rel = rel + 360 end
 				if math.abs(rel) < FoV / 2 then
-					local img
-					if object.model == "enemy1" then
-						img = (dist < 5) and enemy1Near or enemy1Far
-					else
-						img = (dist < 5) and enemy2Near or enemy2Far
-					end
+					local variant = enemySprites[object.spriteVariant or object.model]
+					local img = (dist < 5) and variant.near or variant.far
 					local imgW, imgH = imgWidth(img), imgHeight(img)
 					local col = math.floor(termWidth / 2 + (rel / (FoV / 2)) * (termWidth / 2) - imgW / 2)
 					local row = math.floor(termHeight / 2) - imgH

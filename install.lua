@@ -14,29 +14,43 @@
 -- checked: the URL serves fine standalone, computercraft-server.toml has
 -- no rule denying github). One file at a time avoids the burst entirely.
 --
-local BASE = "https://raw.githubusercontent.com/Deaeath/CCDoom/master/"
+-- File list is fetched from GitHub's API at install time instead of being
+-- hardcoded here -- a manually-maintained list has gone stale and caused a
+-- real install failure three separate times as assets were added/removed
+-- (missing enemy sprites, missing status bar, a 404 on deleted fire/bfire
+-- aborting the whole install). This makes that whole bug class structurally
+-- impossible: the list is always exactly what's actually in the repo.
+local REPO = "Deaeath/CCDoom"
+local BASE = "https://raw.githubusercontent.com/" .. REPO .. "/master/"
+local API = "https://api.github.com/repos/" .. REPO .. "/contents/"
 local DEST = "colossusdoom"
-
-local width = term.getSize()
-
+local TOP_LEVEL_FILES = { "Doom.lua", "Pine3D-minified.lua", "betterblittle.lua", "blittle", "README.md", "LICENSE" }
 local FOLDERS = { "models", "images", "levels" }
-
-local FILES = {
-    "Doom.lua", "Pine3D-minified.lua", "betterblittle.lua", "blittle",
-    "README.md", "LICENSE",
-    "models/corpse", "models/doorx", "models/doorz", "models/emerald",
-    "models/enemy1", "models/enemy2", "models/wallx", "models/wallxz", "models/wallz",
-    "levels/level1", "levels/level2", "levels/level3", "levels/level4",
-    "levels/level5", "levels/level6", "levels/level7", "levels/level8", "levels/level9",
-    "images/bgun", "images/bgunf", "images/bheart", "images/bstatusbar",
-    "images/gun", "images/gunf", "images/heart", "images/logo", "images/statusbar",
-    "images/enemy1_near", "images/enemy1_far", "images/enemy2_near", "images/enemy2_far",
-}
 
 local function status(text)
     term.setCursorPos(1, select(2, term.getCursorPos()))
     term.clearLine()
     term.write(text)
+end
+
+local function listRemoteFolder(folder)
+    local handle, err = http.get(API .. folder .. "?cb=" .. os.epoch("utc"))
+    if not handle then
+        error(("Couldn't list %s/ from GitHub: %s"):format(folder, err or "?"))
+    end
+    local body = handle.readAll()
+    handle.close()
+    local entries = textutils.unserialiseJSON(body)
+    if not entries then
+        error("Couldn't parse GitHub API response for " .. folder .. "/")
+    end
+    local names = {}
+    for _, entry in ipairs(entries) do
+        if entry.type == "file" then
+            names[#names + 1] = folder .. "/" .. entry.name
+        end
+    end
+    return names
 end
 
 local function download(relPath, attempt)
@@ -70,6 +84,15 @@ end
 
 for _, folder in ipairs(FOLDERS) do
     fs.makeDir(fs.combine(DEST, folder))
+end
+
+print("Fetching current file list from GitHub...")
+local FILES = {}
+for _, f in ipairs(TOP_LEVEL_FILES) do FILES[#FILES + 1] = f end
+for _, folder in ipairs(FOLDERS) do
+    for _, relPath in ipairs(listRemoteFolder(folder)) do
+        FILES[#FILES + 1] = relPath
+    end
 end
 
 for i, relPath in ipairs(FILES) do

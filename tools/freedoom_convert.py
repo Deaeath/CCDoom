@@ -206,7 +206,18 @@ if __name__ == '__main__':
         ("TROOA1", 4, 6, "enemy2_far"),
         ("STBAR", 51, 5, "statusbar"),      # classic Doom status bar background
         ("STBAR", 51, 10, "bstatusbar"),
+        ("SPOSA1", 8, 14, "enemy3_near"),   # sergeant (shotgun guy), billboard sprite
+        ("SPOSA1", 4, 6, "enemy3_far"),
+        ("SARGA1", 10, 12, "enemy4_near"),  # demon/pinky, billboard sprite
+        ("SARGA1", 5, 6, "enemy4_far"),
+        ("HEADA1", 10, 10, "enemy5_near"),  # cacodemon, billboard sprite
+        ("HEADA1", 5, 5, "enemy5_far"),
     ]
+    for d in range(10):
+        jobs.append(("STTNUM%d" % d, 3, 4, "digit%d" % d))
+        jobs.append(("STTNUM%d" % d, 3, 8, "bdigit%d" % d))
+    jobs.append(("STTPRCNT", 3, 4, "digitpct"))
+    jobs.append(("STTPRCNT", 3, 8, "bdigitpct"))
     os.makedirs(out_dir, exist_ok=True)
     for lump, w, h, outname in jobs:
         if outname == "heart_UNUSED":
